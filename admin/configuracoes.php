@@ -19,7 +19,7 @@ verificarAdmin();
     <link rel="stylesheet" href="../css/dashboard.css">
 </head>
 <body>
-    <?php include '../includes/header.php'; ?>
+    <?php include 'includes/header.php'; ?>
     
     <main class="container">
         <div class="dashboard-header">

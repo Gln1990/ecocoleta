@@ -1,0 +1,133 @@
+/* css/mapa.css */
+.mapa-container {
+    margin: 2rem 0;
+}
+
+.filtros {
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.filtro-form {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+}
+
+.filtro-form .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.mapa-layout {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 2rem;
+    height: 600px;
+}
+
+.lista-rotas {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 1.5rem;
+    overflow-y: auto;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.rota-card {
+    background: var(--light-gray);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.rota-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.rota-card.ativo {
+    background: #e8f5e8;
+    border-left-color: var(--secondary-color);
+}
+
+.rota-card h4 {
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.rota-card p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.mapa-wrapper {
+    position: relative;
+    background: var(--white);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+#mapa {
+    height: 100%;
+    width: 100%;
+}
+
+.mapa-legenda {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: var(--white);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.legenda-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.legenda-cor {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    border: 2px solid var(--white);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+
+/* Responsivo */
+@media (max-width: 968px) {
+    .mapa-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .lista-rotas {
+        height: 300px;
+    }
+    
+    .mapa-wrapper {
+        height: 400px;
+    }
+    
+    .filtro-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

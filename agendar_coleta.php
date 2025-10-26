@@ -1,5 +1,6 @@
 <?php
 // agendar_coleta.php
+//teste de vercionamento
 session_start();
 require_once 'includes/config.php';
 require_once 'includes/auth.php';

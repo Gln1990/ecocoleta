@@ -1,6 +1,5 @@
 <?php
 // agendar_coleta.php
-//teste de vercionamento
 session_start();
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
@@ -28,15 +27,27 @@ if ($coleta_id) {
 
 if ($_POST && $coleta) {
     $data_agendada = $_POST['data_agendada'];
-    $observacoes_coletor = $_POST['observacoes_coletor'];
+    $observacoes_coletor = $_POST['observacoes_coletor'] ?? ''; // Usar valor padrão se não existir
     
     try {
-        // Atualizar coleta
-        $sql = "UPDATE coletas 
-                SET coletor_id = ?, data_agendada = ?, observacoes_coletor = ?, status = 'agendada' 
-                WHERE id = ?";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$_SESSION['usuario']['id'], $data_agendada, $observacoes_coletor, $coleta_id]);
+        // Primeiro, verificar se a coluna existe
+        $check_column = $pdo->query("SHOW COLUMNS FROM coletas LIKE 'observacoes_coletor'")->fetch();
+        
+        if ($check_column) {
+            // Coluna existe, fazer update completo
+            $sql = "UPDATE coletas 
+                    SET coletor_id = ?, data_agendada = ?, observacoes_coletor = ?, status = 'agendada' 
+                    WHERE id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$_SESSION['usuario']['id'], $data_agendada, $observacoes_coletor, $coleta_id]);
+        } else {
+            // Coluna não existe, fazer update sem observacoes_coletor
+            $sql = "UPDATE coletas 
+                    SET coletor_id = ?, data_agendada = ?, status = 'agendada' 
+                    WHERE id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$_SESSION['usuario']['id'], $data_agendada, $coleta_id]);
+        }
         
         // Enviar e-mail de notificação
         $email = new EmailNotificacao();
@@ -46,7 +57,8 @@ if ($_POST && $coleta) {
             'endereco' => $coleta['endereco'],
             'material' => $coleta['material'],
             'quantidade' => $coleta['quantidade'],
-            'coletor_nome' => $_SESSION['usuario']['nome']
+            'coletor_nome' => $_SESSION['usuario']['nome'],
+            'observacoes_coletor' => $observacoes_coletor
         ];
         
         $email->enviarNotificacaoColetaAgendada(
@@ -55,7 +67,7 @@ if ($_POST && $coleta) {
             $dadosEmail
         );
         
-        $_SESSION['sucesso'] = "Coleta agendada com sucesso! E-mail enviado para o morador.";
+        $_SESSION['sucesso'] = "Coleta agendada com sucesso!" . ($check_column ? '' : ' (Observações do coletor não salvas - coluna não existe)');
         header('Location: dashboard.php');
         exit;
         
@@ -71,8 +83,6 @@ if ($_POST && $coleta) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendar Coleta - EcoColeta</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/mapa.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 <body>
     <?php include 'includes/header.php'; ?>
@@ -98,11 +108,9 @@ if ($_POST && $coleta) {
                     <p><strong>Materiais:</strong> <?php echo htmlspecialchars($coleta['material']); ?></p>
                     <p><strong>Quantidade:</strong> <?php echo htmlspecialchars($coleta['quantidade']); ?></p>
                     <p><strong>Telefone:</strong> <?php echo htmlspecialchars($coleta['telefone']); ?></p>
-                    <p><strong>Observações:</strong> <?php echo htmlspecialchars($coleta['observacoes']); ?></p>
-                </div>
-
-                <div class="mapa-mini">
-                    <div id="mapa-coleta"></div>
+                    <?php if (!empty($coleta['observacoes'])): ?>
+                        <p><strong>Observações do Morador:</strong> <?php echo htmlspecialchars($coleta['observacoes']); ?></p>
+                    <?php endif; ?>
                 </div>
 
                 <form method="POST">
@@ -113,7 +121,7 @@ if ($_POST && $coleta) {
                     </div>
 
                     <div class="form-group">
-                        <label>Observações para o Morador</label>
+                        <label>Observações para o Morador (opcional)</label>
                         <textarea name="observacoes_coletor" rows="3" 
                                   placeholder="Instruções, observações, etc..."></textarea>
                     </div>
@@ -124,27 +132,5 @@ if ($_POST && $coleta) {
             <?php endif; ?>
         </div>
     </main>
-
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script>
-        // Mapa para visualização do endereço da coleta
-        document.addEventListener('DOMContentLoaded', function() {
-            <?php if ($coleta): ?>
-            const mapa = L.map('mapa-coleta').setView([-23.5505, -46.6333], 15);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(mapa);
-            
-            // Simular geocoding do endereço
-            const endereco = "<?php echo $coleta['endereco']; ?>";
-            // Em implementação real, usar serviço de geocoding como Nominatim
-            L.marker([-23.5505, -46.6333])
-                .addTo(mapa)
-                .bindPopup(`<b>Local da Coleta</b><br>${endereco}`)
-                .openPopup();
-            <?php endif; ?>
-        });
-    </script>
 </body>
 </html>
